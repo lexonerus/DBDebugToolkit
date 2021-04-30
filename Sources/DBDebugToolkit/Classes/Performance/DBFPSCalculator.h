@@ -1,6 +1,6 @@
 // The MIT License
 //
-// Copyright (c) 2017 Dariusz Bukowski
+// Copyright (c) 2016 Dariusz Bukowski
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,14 +20,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-/**
- `UIView` category adding helper method for creating a snaphot image of the view.
- */
-@interface UIView (Snapshot)
+#import <Foundation/Foundation.h>
+@import UIKit;
 
 /**
- Creates and returns an image containing 
+ `DBFPSCalculator` is a simple class that calculates the current frames per second value.
  */
-- (UIImage *)db_snapshot;
+@interface DBFPSCalculator : NSObject
+
+/**
+ Returns calculated frames per second.
+ */
+- (CGFloat)fps;
 
 @end

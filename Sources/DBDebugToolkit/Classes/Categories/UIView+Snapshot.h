@@ -20,16 +20,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#import "UIView+Snapshot.h"
+@import UIKit;
 
-@implementation UIView (Snapshot)
+/**
+ `UIView` category adding helper method for creating a snaphot image of the view.
+ */
+@interface UIView (Snapshot)
 
-- (UIImage *)db_snapshot {
-    UIGraphicsBeginImageContextWithOptions(self.bounds.size, NO, [UIScreen mainScreen].scale);
-    [self drawViewHierarchyInRect:self.bounds afterScreenUpdates:NO];
-    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return image;
-}
+/**
+ Creates and returns an image containing 
+ */
+- (UIImage *)db_snapshot;
 
 @end
