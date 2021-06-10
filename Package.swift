@@ -20,6 +20,7 @@ let package = Package(
         .target(
             name: "DBDebugToolkit",
 			dependencies: [],
+			publicHeadersPath: "",
 			cSettings: [
 				.headerSearchPath("Classes"),
 				.headerSearchPath("Classes/BuildInfo"),
