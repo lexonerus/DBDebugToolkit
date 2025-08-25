@@ -35,7 +35,7 @@ typedef NS_ENUM(NSUInteger, DBBodyPreviewViewControllerMode) {
  `DBBodyPreviewViewController` is a view controller displaying a preview of the request or response body.
  It handles image, JSON and text data.
  */
-@interface DBBodyPreviewViewController : UIViewController
+@interface DBBodyPreviewViewController : UIViewController <UISearchBarDelegate>
 
 /**
  Configures the view with request and mode.
