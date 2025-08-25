@@ -26,10 +26,54 @@
 @implementation NSBundle (DBDebugToolkit)
 
 + (instancetype)debugToolkitBundle {
-//    NSBundle *podBundle = [NSBundle bundleForClass:[DBDebugToolkit class]];
-    NSBundle *podBundle = [NSBundle mainBundle];
-    NSURL *bundleURL = [podBundle URLForResource:@"DBDebugToolkit_DBDebugToolkit" withExtension:@"bundle"];
-    return [NSBundle bundleWithURL:bundleURL];
+    // Try multiple approaches to find the bundle
+    
+    // Method 1: Try to find the resource bundle in main bundle
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSURL *bundleURL = [mainBundle URLForResource:@"DBDebugToolkit_DBDebugToolkit" withExtension:@"bundle"];
+    
+    if (bundleURL) {
+        NSBundle *resourceBundle = [NSBundle bundleWithURL:bundleURL];
+        if (resourceBundle) {
+            return resourceBundle;
+        }
+    }
+    
+    // Method 2: Try to find the resource bundle in the pod bundle
+    NSBundle *podBundle = [NSBundle bundleForClass:[DBDebugToolkit class]];
+    if (podBundle) {
+        bundleURL = [podBundle URLForResource:@"DBDebugToolkit_DBDebugToolkit" withExtension:@"bundle"];
+        if (bundleURL) {
+            NSBundle *resourceBundle = [NSBundle bundleWithURL:bundleURL];
+            if (resourceBundle) {
+                return resourceBundle;
+            }
+        }
+    }
+    
+    // Method 3: Try to find the resource bundle in the framework bundle
+    NSBundle *frameworkBundle = [NSBundle bundleForClass:[DBDebugToolkit class]];
+    if (frameworkBundle) {
+        bundleURL = [frameworkBundle URLForResource:@"DBDebugToolkit" withExtension:@"bundle"];
+        if (bundleURL) {
+            NSBundle *resourceBundle = [NSBundle bundleWithURL:bundleURL];
+            if (resourceBundle) {
+                return resourceBundle;
+            }
+        }
+    }
+    
+    // Method 4: Try to find storyboards directly in the pod bundle
+    if (podBundle) {
+        NSURL *storyboardURL = [podBundle URLForResource:@"DBBodyPreviewViewController" withExtension:@"storyboard"];
+        if (storyboardURL) {
+            return podBundle;
+        }
+    }
+    
+    // Method 5: Fallback to main bundle if nothing else works
+    NSLog(@"DBDebugToolkit: Could not find resource bundle, falling back to main bundle");
+    return mainBundle;
 }
 
 @end
