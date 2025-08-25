@@ -1,20 +1,27 @@
 PODS:
-  - Expecta (1.0.5)
-  - Specta (1.0.5)
+  - DBDebugToolkit (0.6.1)
+  - Expecta (1.0.6)
+  - Specta (2.0.0)
 
 DEPENDENCIES:
+  - DBDebugToolkit (from `../`)
   - Expecta
   - Specta
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
+  trunk:
     - Expecta
     - Specta
 
+EXTERNAL SOURCES:
+  DBDebugToolkit:
+    :path: "../"
+
 SPEC CHECKSUMS:
-  Expecta: e1c022fcd33910b6be89c291d2775b3fe27a89fe
-  Specta: ac94d110b865115fe60ff2c6d7281053c6f8e8a2
+  DBDebugToolkit: 5da7a6d749068500cdee61756bb0134e8b66b4eb
+  Expecta: 3b6bd90a64b9a1dcb0b70aa0e10a7f8f631667d5
+  Specta: b79d84043684b35ffdc2680df578dc318ec2efc2
 
-PODFILE CHECKSUM: 03d83952eeb65e0b2973dd75817fb4f0ff402629
+PODFILE CHECKSUM: 77767a179ee89a5e5c81345791ab10b3079f89ac
 
-COCOAPODS: 1.10.1
+COCOAPODS: 1.16.2

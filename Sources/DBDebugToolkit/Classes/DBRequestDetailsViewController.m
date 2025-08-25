@@ -53,6 +53,22 @@ static NSString *const DBRequestDetailsViewControllerPrototypeSimpleCellIdentifi
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    // Ensure navigation bar has proper background
+    if (self.navigationController) {
+        if (@available(iOS 13.0, *)) {
+            UINavigationBarAppearance *appearance = self.navigationController.navigationBar.standardAppearance;
+            if (!appearance) {
+                appearance = [[UINavigationBarAppearance alloc] init];
+            }
+            appearance.backgroundColor = [UIColor systemBackgroundColor];
+            self.navigationController.navigationBar.standardAppearance = appearance;
+            self.navigationController.navigationBar.scrollEdgeAppearance = appearance;
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+        }
+    }
+    
     NSBundle *bundle = [NSBundle debugToolkitBundle];
     [self.tableView registerNib:[UINib nibWithNibName:@"DBMenuSegmentedControlTableViewCell" bundle:bundle]
          forCellReuseIdentifier:DBRequestDetailsViewControllerSegmentedControlCellIdentifier];
@@ -80,6 +96,21 @@ static NSString *const DBRequestDetailsViewControllerPrototypeSimpleCellIdentifi
 #pragma mark - Opening body preview
 
 - (void)openBodyPreview {
+    // Ensure navigation bar has proper background before pushing
+    if (self.navigationController) {
+        if (@available(iOS 13.0, *)) {
+            UINavigationBarAppearance *appearance = self.navigationController.navigationBar.standardAppearance;
+            if (!appearance) {
+                appearance = [[UINavigationBarAppearance alloc] init];
+            }
+            appearance.backgroundColor = [UIColor systemBackgroundColor];
+            self.navigationController.navigationBar.standardAppearance = appearance;
+            self.navigationController.navigationBar.scrollEdgeAppearance = appearance;
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+        }
+    }
+    
     NSBundle *bundle = [NSBundle debugToolkitBundle];
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"DBBodyPreviewViewController" bundle:bundle];
     DBBodyPreviewViewController *bodyPreviewViewController = [storyboard instantiateInitialViewController];
@@ -91,9 +122,14 @@ static NSString *const DBRequestDetailsViewControllerPrototypeSimpleCellIdentifi
 #pragma mark - UITableViewDelegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 3 && indexPath.row == 1) {
-        [self openBodyPreview];
-        [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    if (indexPath.section == 3) {
+        if (indexPath.row == 1) {
+            [self openBodyPreview];
+            [tableView deselectRowAtIndexPath:indexPath animated:YES];
+        } else if (indexPath.row == 2) {
+            [self copyBodyToClipboard];
+            [tableView deselectRowAtIndexPath:indexPath animated:YES];
+        }
     }
 }
 
@@ -156,7 +192,13 @@ static NSString *const DBRequestDetailsViewControllerPrototypeSimpleCellIdentifi
             if (indexPath.row == 1) {
                 UITableViewCell *openBodyCell = [tableView dequeueReusableCellWithIdentifier:DBRequestDetailsViewControllerPrototypeSimpleCellIdentifier];
                 openBodyCell.textLabel.text = @"Body preview";
+                openBodyCell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                 return openBodyCell;
+            } else if (indexPath.row == 2) {
+                UITableViewCell *copyBodyCell = [tableView dequeueReusableCellWithIdentifier:DBRequestDetailsViewControllerPrototypeSimpleCellIdentifier];
+                copyBodyCell.textLabel.text = @"Copy body to clipboard";
+                copyBodyCell.textLabel.textColor = [UIColor systemBlueColor];
+                return copyBodyCell;
             }
         }
         default: {
@@ -336,13 +378,13 @@ static NSString *const DBRequestDetailsViewControllerPrototypeSimpleCellIdentifi
     switch (self.selectedTab) {
         case DBRequestDetailsViewControllerTabRequest: {
             if (self.requestModel.requestBodySynchronizationStatus == DBRequestModelBodySynchronizationStatusFinished) {
-                return self.requestModel.requestBodyLength > 0 ? 2 : 1;
+                return self.requestModel.requestBodyLength > 0 ? 3 : 1;
             }
             return 0;
         }
         case DBRequestDetailsViewControllerTabResponse: {
             if (self.requestModel.responseBodySynchronizationStatus == DBRequestModelBodySynchronizationStatusFinished) {
-                return self.requestModel.responseBodyLength > 0 ? 2 : 1;
+                return self.requestModel.responseBodyLength > 0 ? 3 : 1;
             }
             return 0;
         }
@@ -406,6 +448,87 @@ static NSString *const DBRequestDetailsViewControllerPrototypeSimpleCellIdentifi
 
 - (NSInteger)segmentedControlSelectedIndex {
     return self.selectedTab == DBRequestDetailsViewControllerTabRequest ? 0 : 1;
+}
+
+#pragma mark - Copy functionality
+
+- (void)copyBodyToClipboard {
+    DBRequestModelBodyType bodyType = self.selectedTab == DBRequestDetailsViewControllerTabRequest ? self.requestModel.requestBodyType : self.requestModel.responseBodyType;
+    
+    if (bodyType == DBRequestModelBodyTypeImage) {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Image Body"
+                                                                     message:@"Image data cannot be copied to clipboard. Please use body preview to view the image."
+                                                              preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+        [self presentViewController:alert animated:YES completion:nil];
+        return;
+    }
+    
+    void (^completion)(NSData *) = ^void(NSData *data) {
+        if (data && data.length > 0) {
+            NSString *dataString;
+            if (bodyType == DBRequestModelBodyTypeJSON) {
+                NSError *error;
+                NSJSONSerialization *jsonSerialization = [NSJSONSerialization JSONObjectWithData:data
+                                                                                         options:NSJSONReadingAllowFragments
+                                                                                           error:&error];
+                if (error) {
+                    dataString = @"Unable to read the data.";
+                } else {
+                    NSData *prettyData = [NSJSONSerialization dataWithJSONObject:jsonSerialization options:NSJSONWritingPrettyPrinted error:nil];
+                    dataString = [[NSString alloc] initWithData:prettyData encoding:NSUTF8StringEncoding];
+                    dataString = [dataString stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
+                }
+            } else {
+                NSString *UTF8DecodedString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+                if (UTF8DecodedString == nil) {
+                    NSMutableString *mutableDataString = [NSMutableString stringWithCapacity:data.length * 2];
+                    const unsigned char *dataBytes = [data bytes];
+                    for (NSInteger index = 0; index < data.length; index++) {
+                        [mutableDataString appendFormat:@"%02x", dataBytes[index]];
+                    }
+                    dataString = [mutableDataString copy];
+                } else {
+                    dataString = UTF8DecodedString;
+                }
+            }
+            
+            if (dataString && dataString.length > 0) {
+                UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                pasteboard.string = dataString;
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Copied!"
+                                                                                 message:@"Body content has been copied to clipboard."
+                                                                          preferredStyle:UIAlertControllerStyleAlert];
+                    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+                    [self presentViewController:alert animated:YES completion:nil];
+                });
+            } else {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"No Content"
+                                                                                 message:@"There is no content to copy."
+                                                                          preferredStyle:UIAlertControllerStyleAlert];
+                    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+                    [self presentViewController:alert animated:YES completion:nil];
+                });
+            }
+        } else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"No Content"
+                                                                             message:@"There is no content to copy."
+                                                                      preferredStyle:UIAlertControllerStyleAlert];
+                [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+                [self presentViewController:alert animated:YES completion:nil];
+            });
+        }
+    };
+    
+    if (self.selectedTab == DBRequestDetailsViewControllerTabRequest) {
+        [self.requestModel readRequestBodyWithCompletion:completion];
+    } else {
+        [self.requestModel readResponseBodyWithCompletion:completion];
+    }
 }
 
 @end

@@ -28,12 +28,12 @@ DBDebugToolkit is a library written with two goals in mind: providing as many ea
   s.source           = { :git => 'https://github.com/dbukowski/DBDebugToolkit.git', :tag => s.version.to_s }
   s.social_media_url = 'https://twitter.com/darekbukowski'
 
-  s.ios.deployment_target = '8.0'
+  s.ios.deployment_target = '12.0'
 
   s.source_files = 'Sources/DBDebugToolkit/Classes/**/*'
   
   s.resource_bundles = {
-    'DBDebugToolkit' => ['Sources/DBDebugToolkit/Resources/*.{storyboard,xib,bundle}']
+    'DBDebugToolkit_DBDebugToolkit' => ['Sources/DBDebugToolkit/Resources/*.{storyboard,xib,bundle}']
   }
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
