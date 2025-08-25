@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'DBDebugToolkit'
-  s.version          = '0.6.1'
+  s.version          = '1.0.0'
   s.summary          = 'Set of easy to use debugging tools for iOS developers & QA engineers.'
 
 # This description is used to generate tags and improve search results.
@@ -24,7 +24,7 @@ DBDebugToolkit is a library written with two goals in mind: providing as many ea
   s.homepage         = 'https://github.com/dbukowski/DBDebugToolkit'
   s.screenshots     = 'http://i.imgur.com/9IENbX4.png', 'http://i.imgur.com/jylD3PI.png', 'http://i.imgur.com/EOCIlgB.png', 'http://i.imgur.com/Ip1rPbJ.png', 'http://i.imgur.com/Cm8XpsQ.png', 'http://i.imgur.com/bfLB1uM.png', 'http://i.imgur.com/dQIwSce.png'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
-  s.author           = { 'Dariusz Bukowski' => 'dariusz.m.bukowski@gmail.com' }
+  s.author           = { 'Dariusz Bukowski' => 'dariusz.m.bukowski@gmail.com', 'Alex Krzywicki' => 'root@lexone.ru' }
   s.source           = { :git => 'https://github.com/dbukowski/DBDebugToolkit.git', :tag => s.version.to_s }
   s.social_media_url = 'https://twitter.com/darekbukowski'
 

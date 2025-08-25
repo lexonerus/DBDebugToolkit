@@ -1,122 +1,62 @@
 # DBDebugToolkit
 
-[![CI Status](http://img.shields.io/travis/dbukowski/DBDebugToolkit.svg?style=flat)](https://travis-ci.org/dbukowski/DBDebugToolkit)
-[![Version](https://img.shields.io/cocoapods/v/DBDebugToolkit.svg?style=flat)](http://cocoapods.org/pods/DBDebugToolkit)
-[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
-[![License](https://img.shields.io/cocoapods/l/DBDebugToolkit.svg?style=flat)](http://cocoapods.org/pods/DBDebugToolkit)
-[![Platform](https://img.shields.io/cocoapods/p/DBDebugToolkit.svg?style=flat)](http://cocoapods.org/pods/DBDebugToolkit)
+[![Version](https://img.shields.io/cocoapods/v/DBDebugToolkit.svg?style=flat)](https://cocoapods.org/pods/DBDebugToolkit)
+[![License](https://img.shields.io/cocoapods/l/DBDebugToolkit.svg?style=flat)](https://cocoapods.org/pods/DBDebugToolkit)
+[![Platform](https://img.shields.io/cocoapods/p/DBDebugToolkit.svg?style=flat)](https://cocoapods.org/pods/DBDebugToolkit)
+[![iOS Version](https://img.shields.io/badge/iOS-12.0+-blue.svg)](https://cocoapods.org/pods/DBDebugToolkit)
 
-DBDebugToolkit is a debugging library written in Objective-C. It is meant to provide as many easily accessible tools as possible while keeping the integration process seamless.
+## Overview
 
-- [Features](#features)
-- [Example](#example)
-- [Requirements](#requirements)
-- [Usage](#usage)
-- [Author](#author)
-- [Installation](#installation)
-- [License](#license)
+**DBDebugToolkit 1.0.0** is a comprehensive debugging toolkit for iOS developers and QA engineers. It provides an extensive set of debugging tools that can be easily integrated into any iOS project, making development and testing more efficient and productive.
+
+## ✨ New in 1.0.0
+
+- **🔍 Advanced Search**: Full-text search in response/request bodies with highlighting
+- **📋 Copy Functionality**: Copy complete response and request bodies to clipboard
+- **🎨 UI Improvements**: Fixed navigation bar transparency issues
+- **📱 Modern iOS Support**: iOS 12.0+ compatibility with iOS 13+ enhancements
+- **⚡ Performance**: Optimized search and improved resource management
 
 ## Features
 
-- [x] Performance
-  - [x] CPU usage (current, max, chart)
-  - [x] Memory usage (current, max, chart)
-  - [x] FPS (current, min, chart)
-  - [x] Widget displaying current CPU usage, memory usage and FPS that stays on top of the screen
-  - [x] Simulating memory warning
-- [x] User interface
-  - [x] Showing all view frames
-  - [x] Slowing down animations
-  - [x] Showing touches on screen (useful for recording and screen sharing)
-  - [x] Displaying customizable grid overlay on top of the screen
-  - [x] Autolayout trace
-  - [x] Current view description
-  - [x] View controllers hierarchy
-  - [x] List of available fonts with preview
-  - [x] Showing UIDebuggingInformationOverlay
-- [x] Network
-  - [x] List of all the requests sent by the application
-  - [x] Request and response preview
-- [x] Resources
-  - [x] File system: browsing and removing selected files
-  - [x] User defaults: browsing, removing selected item and clearing all the data
-  - [x] Keychain: browsing, removing selected item and clearing all the data
-  - [x] Core Data: browsing all the managed objects and their relationships with sorting and filtering options
-  - [x] Cookies: browsing, removing selected cookie and clearing all the data
-- [x] Console
-  - [x] Displaying console output in text view
-  - [x] Sending console output by email with device and system information
-- [x] Simulating location
-- [x] Crash reports
-  - [x] List of all the crashes
-  - [x] Crash reports containing details, stack trace, console output and a screenshot
-  - [x] Sending crash reports by email
-- [x] Modifying custom variable values from the menu
-- [x] Adding custom actions to the menu
-- [x] Opening application settings
-- [x] Application shortcut item for clearing data
-- [x] Showing version & build number
-- [x] Showing device model & iOS version
+### Network Debugging
+- **Request Monitoring**: Track all network requests in real-time
+- **Response Inspection**: View complete response bodies with formatting
+- **Body Copying**: Copy request/response bodies to clipboard
+- **Search & Highlight**: Find specific text in response bodies
+- **Error Tracking**: Monitor failed requests and error details
 
-## Example
+### Performance Tools
+- **FPS Monitoring**: Real-time frame rate tracking
+- **Memory Usage**: Monitor application memory consumption
+- **CPU Usage**: Track CPU performance metrics
+- **Performance Widgets**: In-app performance indicators
 
-To run the example project, clone the repo, and run `pod install` from the Example directory first. The example project is written in Objective-C. The code examples in this README are written in Swift 3.0.
+### User Interface Debugging
+- **View Hierarchy**: Inspect view controller structure
+- **Frame Visualization**: Show view frames and boundaries
+- **Touch Indicators**: Visualize user touch points
+- **Slow Animations**: Debug animation timing issues
+- **Grid Overlay**: Layout assistance with grid lines
+
+### Data Inspection
+- **Core Data Browser**: Explore managed objects and relationships
+- **User Defaults**: View and modify app preferences
+- **Keychain Access**: Inspect stored credentials
+- **File Browser**: Navigate app's file system
+- **Console Output**: Capture and display NSLog messages
+
+### Location & System
+- **Location Simulation**: Test location-based features
+- **Device Information**: Access device and app details
+- **Build Information**: Version and build number display
+- **Crash Reports**: View and analyze crash logs
 
 ## Requirements
 
-DBDebugToolkit requires iOS 8.0 or later.
-
-## Usage
-
-### Setup
-
-DBDebugToolkit was meant to provide as many useful debugging tools as possible. However, the second equally important goal was to keep the setup seamless for all the iOS projects. A good place for setting up DBDebugToolkit is in the `AppDelegate`, as it allows it to start as quickly as possible. The simplest setup consists of only one line:
-
-```swift
-import DBDebugToolkit
-
-func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-    DBDebugToolkit.setup()
-    return true
-}
-```
-
-After such setup, simply shake the device to present the menu with all the debugging options:
-
-<p align="center">
-  <img src="Assets/opening.gif">
-</p>
-
-Read more about triggers to find out how to customize menu presentation.
-
-#### Triggers
-
-Triggers are the objects that tell DBDebugToolkit to present the menu. There are 3 predefined triggers:
-- `DBShakeTrigger` - reacts to shaking the device.
-- `DBTapTrigger` - reacts to tapping the screen.
-- `DBLongPressTrigger` - reacts to long pressing the screen.
-
-By default, DBDebugToolkit is set up with `DBShakeTrigger`. You can also provide your own array of triggers:
-
-```swift
-import DBDebugToolkit
-
-func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-    let tapTrigger = DBTapTrigger(numberOfTouchesRequired: 3)
-    let longPressTrigger = DBLongPressTrigger(minimumPressDuration: 1.0)
-    let shakeTrigger = DBShakeTrigger()
-    DBDebugToolkit.setup(with: [tapTrigger, longPressTrigger, shakeTrigger])
-    return true
-}
-```
-
-These are just examples. Both `DBTapTrigger` and `DBLongPressTrigger` have more customization options.
-
-You can also create your own trigger. To do this, create a class that conforms to protocol `DBDebugToolkitTrigger`. Then create an instance of this class and pass it to the setup method.
-
-### Features
-
-**The complete list of features with examples can now be found here:** [Features](Features.md).
+- **iOS 12.0+** (was iOS 8.0+)
+- **Xcode 12.0+**
+- **Swift 5.3+** (for Swift Package Manager)
 
 ## Installation
 
@@ -126,80 +66,115 @@ DBDebugToolkit is available through [CocoaPods](http://cocoapods.org). To instal
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod "DBDebugToolkit"
+pod 'DBDebugToolkit', '~> 1.0.0'
 ```
 
-However, to provide some of its features, DBDebugToolkit does use private API. The code that uses it is obfuscated to minimize the risk of rejecting your application on the App Store, but it can not be guaranteed that it is enough. That being said, here are some safer ways to install DBDebugToolkit:
+### Swift Package Manager
 
-* Adding it only to debug builds
+DBDebugToolkit also supports Swift Package Manager. Add the following dependency to your `Package.swift`:
 
-  It is now possible to specify the build configuration for a given pod:
-  ```ruby
-  pod "DBDebugToolkit", :configurations => ['Debug']
-  ```
-  After such setup, all your code using DBDebugToolkit needs to be placed in preprocessor macros:
-
-  ```swift
-  #if DEBUG
-      import DBDebugToolkit
-  #endif
-
-  func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-      #if DEBUG
-          DBDebugToolkit.setup()
-      #endif
-      return true
-  }
-  ```
-  The one major drawback of such setup is the fact that it won't include DBDebugToolkit in the builds that you send to the testers.
-
-* Creating a separate target for App Store releases
-
-  After creating a separate target for App Store releases, your podfile could be defined this way:
-  ```ruby
-  def common_pods
-    # Here are all the pods that will be used in both targets.
-  end
-
-  target 'YourApplication' do
-      common_pods
-  end
-
-  target 'YourApplicationAppStore' do
-      common_pods
-      pod "DBDebugToolkit"
-  end
-  ```
-  Then you will have to differentiate between the targets in code. To do this, you could add a custom flag to your App Store target build configuration. Assuming that you named the flag `APPSTORE`, all the code using DBDebugToolkit will be placed in preprocessor macros:
-  ```swift
-  #if !(APPSTORE)
-      import DBDebugToolkit
-  #endif
-
-  func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-      #if !(APPSTORE)
-          DBDebugToolkit.setup()
-      #endif
-      return true
-  }
-  ```
-
-The setup with a separate target for App Store releases will help you prevent sending the build containing the private API calls included in DBDebugToolkit to the App Store review. However, you would have to remember about adding all the files to both targets during development. You will have to decide which way is the best for your project. Perhaps it will be easier to manually remove DBDebugToolkit from the podfile before each App Store release.
-
-### Carthage
-
-To integrate DBDebugToolkit into your Xcode project using Carthage, specify it in your Cartfile:
-```ruby
-github "dbukowski/DBDebugToolkit" ~> 0.6.0
+```swift
+dependencies: [
+    .package(url: "https://github.com/dbukowski/DBDebugToolkit.git", from: "1.0.0")
+]
 ```
-Run carthage update to build the framework and drag the built DBDebugToolkit.framework into your Xcode project.
 
-## Author
+Or add it directly in Xcode:
+1. Go to **File** → **Add Package Dependencies...**
+2. Enter the repository URL: `https://github.com/dbukowski/DBDebugToolkit.git`
+3. Select version **1.0.0** or higher
+4. Click **Add Package**
 
-Maintained by Marian Sobczyk, marian.sobczyk@gmail.com
+**Note**: For SPM support, iOS 12.0+ is required.
 
-Created by Dariusz Bukowski, dariusz.m.bukowski@gmail.com
+## Quick Start
+
+### 1. Import the Framework
+
+```objc
+#import <DBDebugToolkit/DBDebugToolkit.h>
+```
+
+### 2. Enable in AppDelegate
+
+```objc
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    [DBDebugToolkit enable];
+    return YES;
+}
+```
+
+### 3. Activate the Toolkit
+
+- **Shake Device** (simulator: ⌘+⌃+Z)
+- **Long Press** on any screen
+- **Programmatically**: `[DBDebugToolkit show]`
+
+## Usage Examples
+
+### Copy Response Body
+
+```objc
+// Long press on network request cell
+// Or use the copy button in body preview
+// Or select "Copy body to clipboard" in request details
+```
+
+### Search in Body Content
+
+```objc
+// Open body preview
+// Use search bar to find specific text
+// Navigate between results with ↑↓ buttons
+```
+
+### Monitor Network Requests
+
+```objc
+// View all network requests in real-time
+// Inspect request/response headers and bodies
+// Copy complete request/response data
+```
+
+## Migration from 0.6.1
+
+### Breaking Changes
+- **Minimum iOS**: Update from iOS 8.0 to iOS 12.0
+- **Deployment Target**: Update project settings accordingly
+
+### New Features
+- Search functionality in body preview
+- Copy buttons throughout the interface
+- Improved navigation bar appearance
+- Enhanced error handling
+
+## Documentation
+
+- [Features Overview](Features.md)
+- [Authors & Contributors](AUTHORS.md)
+- [API Reference](https://github.com/dbukowski/DBDebugToolkit/wiki)
+- [Migration Guide](CHANGELOG.md)
+
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
 ## License
 
-DBDebugToolkit is available under the MIT license. See the LICENSE file for more info.
+DBDebugToolkit is available under the MIT license. See the [LICENSE](LICENSE) file for more info.
+
+## Author
+
+**Dariusz Bukowski** - [@darekbukowski](https://twitter.com/darekbukowski)  
+**Alex Krzywicki** - Major contributor for version 1.0.0 root@lexone.ru
+
+## Acknowledgments
+
+- Original concept and development by Dariusz Bukowski
+- Major improvements and bug fixes by Alex Krzywicki
+- Community contributions and feedback
+- iOS development community for inspiration
+
+---
+
+**DBDebugToolkit 1.0.0** - Making iOS debugging easier, one tool at a time! 🚀
