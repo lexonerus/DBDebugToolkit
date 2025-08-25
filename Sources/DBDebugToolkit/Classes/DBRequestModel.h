@@ -22,6 +22,7 @@
 
 #import <Foundation/Foundation.h>
 #import "DBRequestOutcome.h"
+@import UIKit;
 
 /**
  Enum with the data type of the request or response body.

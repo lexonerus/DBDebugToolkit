@@ -26,8 +26,9 @@
 @implementation NSBundle (DBDebugToolkit)
 
 + (instancetype)debugToolkitBundle {
-    NSBundle *podBundle = [NSBundle bundleForClass:[DBDebugToolkit class]];
-    NSURL *bundleURL = [podBundle URLForResource:@"DBDebugToolkit" withExtension:@"bundle"];
+//    NSBundle *podBundle = [NSBundle bundleForClass:[DBDebugToolkit class]];
+    NSBundle *podBundle = [NSBundle mainBundle];
+    NSURL *bundleURL = [podBundle URLForResource:@"DBDebugToolkit_DBDebugToolkit" withExtension:@"bundle"];
     return [NSBundle bundleWithURL:bundleURL];
 }
 

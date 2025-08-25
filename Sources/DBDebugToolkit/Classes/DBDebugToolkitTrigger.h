@@ -20,16 +20,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
+#import "DBDebugToolkitTriggerDelegate.h"
+@import UIKit;
+
+#ifndef DBDebugToolkitTrigger_h
+#define DBDebugToolkitTrigger_h
 
 /**
- `DBFPSCalculator` is a simple class that calculates the current frames per second value.
+ A protocol adopted by all the triggers. It can be used to provide a custom trigger.
  */
-@interface DBFPSCalculator : NSObject
+@protocol DBDebugToolkitTrigger <NSObject>
 
 /**
- Returns calculated frames per second.
+ Adds the trigger to a `UIWindow` object. Please note that `UIWindow` inherits from `UIView`, so it is pretty straightforward to add a `UIGestureRecognizer`.
+ 
+ @param window Window that the trigger will be added to.
  */
-- (CGFloat)fps;
+- (void)addToWindow:(UIWindow *)window;
+
+/**
+ Removes the trigger from a `UIWindow` object. Please note that `UIWindow` inherits from `UIView`, so it is pretty straightforward to remove a `UIGestureRecognizer`.
+ 
+ @param window Window that a trigger will be removed from.
+ */
+- (void)removeFromWindow:(UIWindow *)window;
+
+/**
+ A delegate that will be informed about trigger firing. It needs to adopt the `DBDebugToolkitTriggerDelegate` protocol.
+ */
+@property (nonatomic, weak) id <DBDebugToolkitTriggerDelegate> delegate;
 
 @end
+
+#endif /* DBDebugToolkitTrigger_h */

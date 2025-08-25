@@ -24,6 +24,7 @@
 #import "DBNetworkToolkit.h"
 #import "DBRequestOutcome.h"
 #import "DBAuthenticationChallengeSender.h"
+@import UIKit.UIDevice;
 
 static NSString *const DBURLProtocolHandledKey = @"DBURLProtocolHandled";
 

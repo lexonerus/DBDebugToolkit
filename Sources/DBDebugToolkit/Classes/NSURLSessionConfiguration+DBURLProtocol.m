@@ -23,6 +23,7 @@
 #import "NSURLSessionConfiguration+DBURLProtocol.h"
 #import "DBURLProtocol.h"
 #import "NSObject+DBDebugToolkit.h"
+@import UIKit;
 
 @implementation NSURLSessionConfiguration (DBURLProtocol)
 

@@ -22,6 +22,7 @@
 
 #import "DBDeviceInfoProvider.h"
 #import <sys/utsname.h>
+@import UIKit;
 
 @implementation DBDeviceInfoProvider
 
