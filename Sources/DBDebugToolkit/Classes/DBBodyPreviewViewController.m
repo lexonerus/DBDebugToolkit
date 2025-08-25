@@ -33,6 +33,9 @@ typedef NS_ENUM(NSUInteger, DBBodyPreviewViewControllerViewState) {
 @property (weak, nonatomic) IBOutlet UIActivityIndicatorView *activityIndicator;
 @property (weak, nonatomic) IBOutlet UITextView *textView;
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
+@property (nonatomic, strong) NSString *currentBodyText;
+@property (nonatomic, strong) NSData *currentBodyData;
+@property (nonatomic, assign) DBRequestModelBodyType currentBodyType;
 
 @end
 
@@ -46,7 +49,10 @@ typedef NS_ENUM(NSUInteger, DBBodyPreviewViewControllerViewState) {
     self.title = mode == DBBodyPreviewViewControllerModeRequest ? @"Request body" : @"Response body";
     [self setViewState:DBBodyPreviewViewControllerViewStateLoading animated:YES];
     DBRequestModelBodyType bodyType = mode == DBBodyPreviewViewControllerModeRequest ? requestModel.requestBodyType : requestModel.responseBodyType;
+    self.currentBodyType = bodyType;
+    
     void (^completion)(NSData *) = ^void(NSData *data) {
+        self.currentBodyData = data;
         if (bodyType == DBRequestModelBodyTypeImage) {
             self.imageView.image = [UIImage imageWithData:data];
             [self setViewState:DBBodyPreviewViewControllerViewStateShowingImage animated:YES];
@@ -77,6 +83,7 @@ typedef NS_ENUM(NSUInteger, DBBodyPreviewViewControllerViewState) {
                     dataString = UTF8DecodedString;
                 }
             }
+            self.currentBodyText = dataString;
             self.textView.text = dataString;
             [self setViewState:DBBodyPreviewViewControllerViewStateShowingText animated:YES];
         }
@@ -110,6 +117,44 @@ typedef NS_ENUM(NSUInteger, DBBodyPreviewViewControllerViewState) {
             [self.activityIndicator stopAnimating];
         }
     }];
+}
+
+#pragma mark - Copy functionality
+
+- (IBAction)copyButtonTapped:(id)sender {
+    [self copyBodyToClipboard];
+}
+
+- (void)copyBodyToClipboard {
+    if (self.currentBodyType == DBRequestModelBodyTypeImage) {
+        if (self.currentBodyData) {
+            // For images, we can't copy the image directly to clipboard, but we can show a message
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Image Body"
+                                                                         message:@"Image data cannot be copied to clipboard. You can take a screenshot or save the image."
+                                                                  preferredStyle:UIAlertControllerStyleAlert];
+            [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+            [self presentViewController:alert animated:YES completion:nil];
+        }
+    } else {
+        if (self.currentBodyText && self.currentBodyText.length > 0) {
+            UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+            pasteboard.string = self.currentBodyText;
+            
+            // Show success feedback
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Copied!"
+                                                                         message:@"Body content has been copied to clipboard."
+                                                                  preferredStyle:UIAlertControllerStyleAlert];
+            [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+            [self presentViewController:alert animated:YES completion:nil];
+        } else {
+            // Show error message
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"No Content"
+                                                                         message:@"There is no content to copy."
+                                                                  preferredStyle:UIAlertControllerStyleAlert];
+            [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+            [self presentViewController:alert animated:YES completion:nil];
+        }
+    }
 }
 
 @end

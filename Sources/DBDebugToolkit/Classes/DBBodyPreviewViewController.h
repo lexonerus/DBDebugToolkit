@@ -45,4 +45,9 @@ typedef NS_ENUM(NSUInteger, DBBodyPreviewViewControllerMode) {
  */
 - (void)configureWithRequestModel:(DBRequestModel *)requestModel mode:(DBBodyPreviewViewControllerMode)mode;
 
+/**
+ Copies the current body content to the clipboard.
+ */
+- (void)copyBodyToClipboard;
+
 @end

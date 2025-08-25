@@ -50,6 +50,13 @@
                         </constraints>
                     </view>
                     <extendedEdge key="edgesForExtendedLayout" bottom="YES"/>
+                    <navigationItem key="navigationItem" id="navigationItem">
+                        <barButtonItem key="rightBarButtonItem" title="Copy" id="copyButton">
+                            <connections>
+                                <action selector="copyButtonTapped:" destination="HRx-A4-BvJ" id="copyAction"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="activityIndicator" destination="H3H-GY-yty" id="B0W-Nr-9ih"/>
                         <outlet property="imageView" destination="MVi-3i-czO" id="hJP-w5-RR2"/>

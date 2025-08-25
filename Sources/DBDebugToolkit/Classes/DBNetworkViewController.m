@@ -57,6 +57,11 @@ static NSString *const DBNetworkViewControllerRequestCellIdentifier = @"DBReques
     [self configureViewWithLoggingRequestsEnabled:self.networkToolkit.loggingEnabled];
     self.operationQueue = [NSOperationQueue new];
     self.operationQueue.maxConcurrentOperationCount = 1;
+    
+    // Add long press gesture for copying response body
+    UILongPressGestureRecognizer *longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
+    longPressGesture.minimumPressDuration = 0.5;
+    [self.tableView addGestureRecognizer:longPressGesture];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -226,6 +231,201 @@ static NSString *const DBNetworkViewControllerRequestCellIdentifier = @"DBReques
 - (void)requestDetailsViewControllerDidDismiss:(DBRequestDetailsViewController *)requestDetailsViewController {
     self.requestDetailsViewController = nil;
     self.openedRequest = nil;
+}
+
+#pragma mark - Long Press Handling
+
+- (void)handleLongPress:(UILongPressGestureRecognizer *)gestureRecognizer {
+    if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
+        CGPoint point = [gestureRecognizer locationInView:self.tableView];
+        NSIndexPath *indexPath = [self.tableView indexPathForRowAtPoint:point];
+        
+        if (indexPath) {
+            DBRequestModel *requestModel = self.filteredRequests[self.filteredRequests.count - 1 - indexPath.row];
+            [self showCopyMenuForRequest:requestModel atIndexPath:indexPath];
+        }
+    }
+}
+
+- (void)showCopyMenuForRequest:(DBRequestModel *)requestModel atIndexPath:(NSIndexPath *)indexPath {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Copy Body"
+                                                                 message:@"Choose what to copy:"
+                                                          preferredStyle:UIAlertControllerStyleActionSheet];
+    
+    // Add request body option if available
+    if (requestModel.requestBodySynchronizationStatus == DBRequestModelBodySynchronizationStatusFinished && 
+        requestModel.requestBodyLength > 0) {
+        [alert addAction:[UIAlertAction actionWithTitle:@"Copy Request Body" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            [self copyRequestBodyForRequest:requestModel];
+        }]];
+    }
+    
+    // Add response body option if available
+    if (requestModel.finished && !requestModel.didFinishWithError && 
+        requestModel.responseBodySynchronizationStatus == DBRequestModelBodySynchronizationStatusFinished &&
+        requestModel.responseBodyLength > 0) {
+        [alert addAction:[UIAlertAction actionWithTitle:@"Copy Response Body" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            [self copyResponseBodyForRequest:requestModel];
+        }]];
+    }
+    
+    // If no options available, show message
+    if (alert.actions.count == 0) {
+        [alert addAction:[UIAlertAction actionWithTitle:@"No Body Available" style:UIAlertActionStyleDefault handler:nil]];
+    } else {
+        [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+    }
+    
+    // For iPad, we need to set the popover presentation controller
+    if (alert.popoverPresentationController) {
+        UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+        alert.popoverPresentationController.sourceView = cell;
+        alert.popoverPresentationController.sourceRect = cell.bounds;
+    }
+    
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)copyResponseBodyForRequest:(DBRequestModel *)requestModel {
+    if (requestModel.responseBodyType == DBRequestModelBodyTypeImage) {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Image Response"
+                                                                     message:@"Image data cannot be copied to clipboard. Please use the details view to view the image."
+                                                              preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+        [self presentViewController:alert animated:YES completion:nil];
+        return;
+    }
+    
+    [requestModel readResponseBodyWithCompletion:^(NSData *data) {
+        if (data && data.length > 0) {
+            NSString *dataString;
+            if (requestModel.responseBodyType == DBRequestModelBodyTypeJSON) {
+                NSError *error;
+                NSJSONSerialization *jsonSerialization = [NSJSONSerialization JSONObjectWithData:data
+                                                                                         options:NSJSONReadingAllowFragments
+                                                                                           error:&error];
+                if (error) {
+                    dataString = @"Unable to read the data.";
+                } else {
+                    NSData *prettyData = [NSJSONSerialization dataWithJSONObject:jsonSerialization options:NSJSONWritingPrettyPrinted error:nil];
+                    dataString = [[NSString alloc] initWithData:prettyData encoding:NSUTF8StringEncoding];
+                    dataString = [dataString stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
+                }
+            } else {
+                NSString *UTF8DecodedString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+                if (UTF8DecodedString == nil) {
+                    NSMutableString *mutableDataString = [NSMutableString stringWithCapacity:data.length * 2];
+                    const unsigned char *dataBytes = [data bytes];
+                    for (NSInteger index = 0; index < data.length; index++) {
+                        [mutableDataString appendFormat:@"%02x", dataBytes[index]];
+                    }
+                    dataString = [mutableDataString copy];
+                } else {
+                    dataString = UTF8DecodedString;
+                }
+            }
+            
+            if (dataString && dataString.length > 0) {
+                UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                pasteboard.string = dataString;
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Copied!"
+                                                                                 message:@"Response body has been copied to clipboard."
+                                                                          preferredStyle:UIAlertControllerStyleAlert];
+                    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+                    [self presentViewController:alert animated:YES completion:nil];
+                });
+            } else {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"No Content"
+                                                                                 message:@"There is no content to copy."
+                                                                          preferredStyle:UIAlertControllerStyleAlert];
+                    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+                    [self presentViewController:alert animated:YES completion:nil];
+                });
+            }
+        } else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"No Content"
+                                                                             message:@"There is no content to copy."
+                                                                      preferredStyle:UIAlertControllerStyleAlert];
+                [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+                [self presentViewController:alert animated:YES completion:nil];
+            });
+        }
+    }];
+}
+
+- (void)copyRequestBodyForRequest:(DBRequestModel *)requestModel {
+    if (requestModel.requestBodyType == DBRequestModelBodyTypeImage) {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Image Request"
+                                                                     message:@"Image data cannot be copied to clipboard. Please use the details view to view the image."
+                                                              preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+        [self presentViewController:alert animated:YES completion:nil];
+        return;
+    }
+    
+    [requestModel readRequestBodyWithCompletion:^(NSData *data) {
+        if (data && data.length > 0) {
+            NSString *dataString;
+            if (requestModel.requestBodyType == DBRequestModelBodyTypeJSON) {
+                NSError *error;
+                NSJSONSerialization *jsonSerialization = [NSJSONSerialization JSONObjectWithData:data
+                                                                                         options:NSJSONReadingAllowFragments
+                                                                                           error:&error];
+                if (error) {
+                    dataString = @"Unable to read the data.";
+                } else {
+                    NSData *prettyData = [NSJSONSerialization dataWithJSONObject:jsonSerialization options:NSJSONWritingPrettyPrinted error:nil];
+                    dataString = [[NSString alloc] initWithData:prettyData encoding:NSUTF8StringEncoding];
+                    dataString = [dataString stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
+                }
+            } else {
+                NSString *UTF8DecodedString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+                if (UTF8DecodedString == nil) {
+                    NSMutableString *mutableDataString = [NSMutableString stringWithCapacity:data.length * 2];
+                    const unsigned char *dataBytes = [data bytes];
+                    for (NSInteger index = 0; index < data.length; index++) {
+                        [mutableDataString appendFormat:@"%02x", dataBytes[index]];
+                    }
+                    dataString = [mutableDataString copy];
+                } else {
+                    dataString = UTF8DecodedString;
+                }
+            }
+            
+            if (dataString && dataString.length > 0) {
+                UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                pasteboard.string = dataString;
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Copied!"
+                                                                                 message:@"Request body has been copied to clipboard."
+                                                                          preferredStyle:UIAlertControllerStyleAlert];
+                    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+                    [self presentViewController:alert animated:YES completion:nil];
+                });
+            } else {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"No Content"
+                                                                                 message:@"There is no content to copy."
+                                                                          preferredStyle:UIAlertControllerStyleAlert];
+                    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+                    [self presentViewController:alert animated:YES completion:nil];
+                });
+            }
+        } else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"No Content"
+                                                                             message:@"There is no content to copy."
+                                                                      preferredStyle:UIAlertControllerStyleAlert];
+                [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+                [self presentViewController:alert animated:YES completion:nil];
+            });
+        }
+    }];
 }
 
 @end
