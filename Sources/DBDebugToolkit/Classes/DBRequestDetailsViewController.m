@@ -53,6 +53,22 @@ static NSString *const DBRequestDetailsViewControllerPrototypeSimpleCellIdentifi
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    // Ensure navigation bar has proper background
+    if (self.navigationController) {
+        if (@available(iOS 13.0, *)) {
+            UINavigationBarAppearance *appearance = self.navigationController.navigationBar.standardAppearance;
+            if (!appearance) {
+                appearance = [[UINavigationBarAppearance alloc] init];
+            }
+            appearance.backgroundColor = [UIColor systemBackgroundColor];
+            self.navigationController.navigationBar.standardAppearance = appearance;
+            self.navigationController.navigationBar.scrollEdgeAppearance = appearance;
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+        }
+    }
+    
     NSBundle *bundle = [NSBundle debugToolkitBundle];
     [self.tableView registerNib:[UINib nibWithNibName:@"DBMenuSegmentedControlTableViewCell" bundle:bundle]
          forCellReuseIdentifier:DBRequestDetailsViewControllerSegmentedControlCellIdentifier];
@@ -80,6 +96,21 @@ static NSString *const DBRequestDetailsViewControllerPrototypeSimpleCellIdentifi
 #pragma mark - Opening body preview
 
 - (void)openBodyPreview {
+    // Ensure navigation bar has proper background before pushing
+    if (self.navigationController) {
+        if (@available(iOS 13.0, *)) {
+            UINavigationBarAppearance *appearance = self.navigationController.navigationBar.standardAppearance;
+            if (!appearance) {
+                appearance = [[UINavigationBarAppearance alloc] init];
+            }
+            appearance.backgroundColor = [UIColor systemBackgroundColor];
+            self.navigationController.navigationBar.standardAppearance = appearance;
+            self.navigationController.navigationBar.scrollEdgeAppearance = appearance;
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+        }
+    }
+    
     NSBundle *bundle = [NSBundle debugToolkitBundle];
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"DBBodyPreviewViewController" bundle:bundle];
     DBBodyPreviewViewController *bodyPreviewViewController = [storyboard instantiateInitialViewController];

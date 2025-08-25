@@ -43,6 +43,49 @@ typedef NS_ENUM(NSUInteger, DBBodyPreviewViewControllerViewState) {
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    // Add background color to navigation bar without changing transparency
+    if (self.navigationController) {
+        if (@available(iOS 13.0, *)) {
+            // For iOS 13+, set background color while keeping current appearance
+            UINavigationBarAppearance *appearance = self.navigationController.navigationBar.standardAppearance;
+            if (!appearance) {
+                appearance = [[UINavigationBarAppearance alloc] init];
+            }
+            appearance.backgroundColor = [UIColor systemBackgroundColor];
+            self.navigationController.navigationBar.standardAppearance = appearance;
+            self.navigationController.navigationBar.scrollEdgeAppearance = appearance;
+        } else {
+            // For iOS 12 and earlier, set background color
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+        }
+    }
+    
+    // Add Copy button to navigation bar
+    UIBarButtonItem *copyButton = [[UIBarButtonItem alloc] initWithTitle:@"Copy" 
+                                                                    style:UIBarButtonItemStylePlain 
+                                                                   target:self 
+                                                                   action:@selector(copyButtonTapped:)];
+    self.navigationItem.rightBarButtonItem = copyButton;
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
+    // Ensure navigation bar has background color
+    if (self.navigationController) {
+        if (@available(iOS 13.0, *)) {
+            UINavigationBarAppearance *appearance = self.navigationController.navigationBar.standardAppearance;
+            if (!appearance) {
+                appearance = [[UINavigationBarAppearance alloc] init];
+            }
+            appearance.backgroundColor = [UIColor systemBackgroundColor];
+            self.navigationController.navigationBar.standardAppearance = appearance;
+            self.navigationController.navigationBar.scrollEdgeAppearance = appearance;
+        } else {
+            self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+        }
+    }
 }
 
 - (void)configureWithRequestModel:(DBRequestModel *)requestModel mode:(DBBodyPreviewViewControllerMode)mode {
